@@ -12,13 +12,13 @@ with open('LICENSE') as f:
     license = f.read()
 
 setup(
-    name='sample',
+    name='semodbus2domoticz',
     version='0.1.0',
-    description='Sample package for Python-Guide.org',
+    description='python port of https://github.com/tjko/sunspec-monitor',
     long_description=readme,
-    author='Kenneth Reitz',
-    author_email='me@kennethreitz.com',
-    url='https://github.com/kennethreitz/samplemod',
+    author='Geert Kroone',
+    author_email='geert@kroone.net',
+    url='https://github.com/gkroone/semodbus2domoticz',
     license=license,
     packages=find_packages(exclude=('tests', 'docs'))
 )
