@@ -7,7 +7,8 @@ import re
 import urllib.request
 import urllib
 import configparser
-config = configparser.ConfigParser()
+import argparse
+c = configparser.ConfigParser()
 
 TIMEOUT = 10
 PORT = 502
@@ -17,7 +18,18 @@ SUNSPEC_I_MODEL_BLOCK_START = 40069
 SUNSPEC_M_COMMON_BLOCK_START = 40121
 SUNSPEC_M_MODEL_BLOCK_START = 40188
 
-c=config.read('example.ini')
+parser = argparse.ArgumentParser(
+                    prog = 'semodbus2domoticz',
+                    description = 'Monitors SolarEdge inverters and sends the data to domoticz',
+                    epilog = 'usage: semodbus2domoticz.py -c <path-to-config.ini>')
+
+parser.add_argument('--config', dest='config',
+                    default="/domoticz.ini",
+                    help='provide the path to the .ini file with your local domoticz details')
+
+args = parser.parse_args()
+
+c.read(args.config)
 
 
 #####################################################################
@@ -25,44 +37,44 @@ c=config.read('example.ini')
 #####################################################################
 domoip ="127.0.0.1" # Domoticz ipaddress.
 dport = "8080" #Domoticz port number.
-idxSEstat = 3348 # idx value of SolarEdge Status, Text device
-idxActPwr = 3356 # idx value of SolarEdge Actual Power / Total Production, General, Kwh device
-idxActPwr2 = 3347 # idx value of SolarEdge Actual Power / Total Production, General, Kwh device
-idxACinv = 3355  # idx value of AC Inverter, Voltage device
-idxac_i = 3350     # idx value of AC Inverter, Amp device
-idxAC_f = 3358   # idx value of AC Inverter freqency text device
-idxDCinv = 3351  # idx value of DC Inverter, Voltage device
-idxdc_i = 3357     # idx value of DC Inverter, Amp device
-idxEffin = 3352  # idx value of SolarEdge Efficiency, Percentage device
-idxTemp  = 3353  # idx value of SolarEdge Temperature, Temperature device
-idxTotPwr = 3354 # idx value of Total LifTime Production, Custom Sensor
+idxSEstat = 1000 # idx value of SolarEdge Status, Text device
+idxActPwr = 1001 # idx value of SolarEdge Actual Power / Total Production, General, Kwh device
+idxActPwr2 = 1002 # idx value of SolarEdge Actual Power / Total Production, General, Kwh device
+idxACinv = 1003  # idx value of AC Inverter, Voltage device
+idxac_i = 1004    # idx value of AC Inverter, Amp device
+idxAC_f = 1005   # idx value of AC Inverter freqency text device
+idxDCinv = 1006  # idx value of DC Inverter, Voltage device
+idxdc_i = 1007     # idx value of DC Inverter, Amp device
+idxEffin = 1008  # idx value of SolarEdge Efficiency, Percentage device
+idxTemp  = 1009  # idx value of SolarEdge Temperature, Temperature device
+idxTotPwr = 1010 # idx value of Total LifeTime Production, Custom Sensor
 
-if 'domoip' in c['DEFAULT']:
-    domoip=c['DEFAULT']['domoip']
-if 'dport' in c['DEFAULT']:
-    dport=c['DEFAULT']['dport']
-if 'idxSEstat' in c['DEFAULT']:
-    idxSEstat=c['DEFAULT']['idxSEstat']
-if 'idxActPwr' in c['DEFAULT']:
-    idxActPwr=c['DEFAULT']['idxActPwr']
-if 'idxActPwr2' in c['DEFAULT']:
-    idxActPwr2=c['DEFAULT']['idxActPwr2']
-if 'idxACinv' in c['DEFAULT']:
-    idxACinv=c['DEFAULT']['idxACinv']
-if 'idxac_i' in c['DEFAULT']:
-    idxac_i=c['DEFAULT']['idxac_i']
-if 'idxAC_f' in c['DEFAULT']:
-    idxAC_f=c['DEFAULT']['idxAC_f']
-if 'idxDCinv' in c['DEFAULT']:
-    idxDCinv=c['DEFAULT']['idxDCinv']
-if 'idxdc_i' in c['DEFAULT']:
-    idxdc_i=c['DEFAULT']['idxdc_i']
-if 'idxEffin' in c['DEFAULT']:
-    idxEffin=c['DEFAULT']['idxEffin']
-if 'idxTemp' in c['DEFAULT']:
-    idxTemp=c['DEFAULT']['idxTemp']
-if 'idxTotPwr' in c['DEFAULT']:
-    idxTotPwr=c['DEFAULT']['idxTotPwr']
+if 'domoip' in c['DOMOTICZ']:
+    domoip=c['DOMOTICZ']['domoip']
+if 'dport' in c['DOMOTICZ']:
+    dport=c['DOMOTICZ']['dport']
+if 'idxSEstat' in c['DOMOTICZ']:
+    idxSEstat=c['DOMOTICZ']['idxSEstat']
+if 'idxActPwr' in c['DOMOTICZ']:
+    idxActPwr=c['DOMOTICZ']['idxActPwr']
+if 'idxActPwr2' in c['DOMOTICZ']:
+    idxActPwr2=c['DOMOTICZ']['idxActPwr2']
+if 'idxACinv' in c['DOMOTICZ']:
+    idxACinv=c['DOMOTICZ']['idxACinv']
+if 'idxac_i' in c['DOMOTICZ']:
+    idxac_i=c['DOMOTICZ']['idxac_i']
+if 'idxAC_f' in c['DOMOTICZ']:
+    idxAC_f=c['DOMOTICZ']['idxAC_f']
+if 'idxDCinv' in c['DOMOTICZ']:
+    idxDCinv=c['DOMOTICZ']['idxDCinv']
+if 'idxdc_i' in c['DOMOTICZ']:
+    idxdc_i=c['DOMOTICZ']['idxdc_i']
+if 'idxEffin' in c['DOMOTICZ']:
+    idxEffin=c['DOMOTICZ']['idxEffin']
+if 'idxTemp' in c['DOMOTICZ']:
+    idxTemp=c['DOMOTICZ']['idxTemp']
+if 'idxTotPwr' in c['DOMOTICZ']:
+    idxTotPwr=c['DOMOTICZ']['idxTotPwr']
 
 
 ######################################################################
@@ -71,11 +83,29 @@ if 'idxTotPwr' in c['DEFAULT']:
 version ="1.2"
 url =""
 content=""
-content=""
 dwh=0
 deff=0
 dtemp=0
 dac_f=0
+
+
+if 'version' in c['DOMOTICZ']:
+    version=c['DOMOTICZ']['version']
+if 'url' in c['DOMOTICZ']:
+    url=c['DOMOTICZ']['url']
+if 'content' in c['DOMOTICZ']:
+    content=c['DOMOTICZ']['content']
+if 'dwh' in c['DOMOTICZ']:
+    dwh=c['DOMOTICZ']['dwh']
+if 'deff' in c['DOMOTICZ']:
+    deff=c['DOMOTICZ']['deff']
+if 'dtemp' in c['DOMOTICZ']:
+    dtemp=c['DOMOTICZ']['dtemp']
+if 'dac_f' in c['DOMOTICZ']:
+    dac_f=c['DOMOTICZ']['dac_f']
+
+
+
 
 I_STATUS = { 
     0: 'Unknown', 

@@ -23,3 +23,7 @@ setup(
     packages=find_packages(exclude=('tests', 'docs'))
 )
 
+data_files=[
+    ('/usr/local/bin', ['semodbus2domoticz/semodbus2domoticz.py'])
+    ]
+

@@ -1,0 +1,23 @@
+{"DOMOTICZ": {
+  "domoip":"192.168.1.9" ,
+  "dport": "8080" ,
+  "idxSEstat": 3348 ,
+  "idxActPwr": 3356 ,
+  "idxActPwr2": 3347 ,
+  "idxACinv": 3355  ,
+  "idxac_i": 3350     ,
+  "idxAC_f": 3358   ,
+  "idxDCinv": 3351  ,
+  "idxdc_i": 3357     ,
+  "idxEffin": 3352  ,
+  "idxTemp" : 3353  ,
+  "idxTotPwr": 3354 ,
+  "version":"1.2",
+  "url":"",
+  "content":"",
+  "dwh":0,
+  "deff":0,
+  "dtemp":0,
+  "dac_f":0
+}
+}
