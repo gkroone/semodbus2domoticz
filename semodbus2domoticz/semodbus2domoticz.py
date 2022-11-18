@@ -10,6 +10,7 @@ import configparser
 import argparse
 c = configparser.ConfigParser()
 
+
 TIMEOUT = 10
 PORT = 502
 
@@ -29,8 +30,10 @@ parser.add_argument('--config', dest='config',
 
 args = parser.parse_args()
 
-c.read(args.config)
+# with open(args.config, 'r') as f:
+#   c = json.load(f)
 
+c.read(args.config)
 
 #####################################################################
 # For Domoticz, please edit below to your own environment           # 
@@ -51,6 +54,7 @@ idxTotPwr = 1010 # idx value of Total LifeTime Production, Custom Sensor
 
 if 'domoip' in c['DOMOTICZ']:
     domoip=c['DOMOTICZ']['domoip']
+
 if 'dport' in c['DOMOTICZ']:
     dport=c['DOMOTICZ']['dport']
 if 'idxSEstat' in c['DOMOTICZ']:
@@ -88,6 +92,7 @@ deff=0
 dtemp=0
 dac_f=0
 
+c.get('domoip','DOMOTICZ')
 
 if 'version' in c['DOMOTICZ']:
     version=c['DOMOTICZ']['version']
