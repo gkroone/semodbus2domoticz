@@ -92,8 +92,6 @@ deff=0
 dtemp=0
 dac_f=0
 
-c.get('domoip','DOMOTICZ')
-
 if 'version' in c['DOMOTICZ']:
     version=c['DOMOTICZ']['version']
 if 'url' in c['DOMOTICZ']:
