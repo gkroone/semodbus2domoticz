@@ -52,10 +52,17 @@ idxEffin = 1008  # idx value of SolarEdge Efficiency, Percentage device
 idxTemp  = 1009  # idx value of SolarEdge Temperature, Temperature device
 idxTotPwr = 1010 # idx value of Total LifeTime Production, Custom Sensor
 
-if 'domoip' in c['DOMOTICZ']:
+import os
+print(os.environ['DOMOIP'])
+
+if 'domoip' in os.environ['DOMOIP']:
+    domoip=os.environ['DOMOIP']
+elif 'domoip' in c['DOMOTICZ']:
     domoip=c['DOMOTICZ']['domoip']
 
-if 'dport' in c['DOMOTICZ']:
+if 'dport' in os.environ['DOMOTICZIP']:
+    dport=os.environ['DOMOTICZPORT']
+elif 'dport' in c['DOMOTICZ']:
     dport=c['DOMOTICZ']['dport']
 if 'idxSEstat' in c['DOMOTICZ']:
     idxSEstat=c['DOMOTICZ']['idxSEstat']
