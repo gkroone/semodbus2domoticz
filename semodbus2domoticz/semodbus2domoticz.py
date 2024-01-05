@@ -55,12 +55,12 @@ idxTotPwr = 1010 # idx value of Total LifeTime Production, Custom Sensor
 import os
 print(os.environ['DOMOIP'])
 
-if 'domoip' in os.environ['DOMOIP']:
-    domoip=os.environ['DOMOIP']
+if 'DOMOTICZIP' in os.environ:
+    domoip=os.environ['DOMOTICZIP']
 elif 'domoip' in c['DOMOTICZ']:
     domoip=c['DOMOTICZ']['domoip']
 
-if 'dport' in os.environ['DOMOTICZIP']:
+if 'DOMOTICZPORT' in os.environ:
     dport=os.environ['DOMOTICZPORT']
 elif 'dport' in c['DOMOTICZ']:
     dport=c['DOMOTICZ']['dport']
