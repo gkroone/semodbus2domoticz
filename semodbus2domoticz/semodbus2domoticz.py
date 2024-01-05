@@ -53,10 +53,10 @@ idxTemp  = 1009  # idx value of SolarEdge Temperature, Temperature device
 idxTotPwr = 1010 # idx value of Total LifeTime Production, Custom Sensor
 
 import os
-print(os.environ['DOMOIP'])
 
 if 'DOMOTICZIP' in os.environ:
     domoip=os.environ['DOMOTICZIP']
+    print("using DOMOIP from environment: "+os.environ['DOMOTICZIP'])
 elif 'domoip' in c['DOMOTICZ']:
     domoip=c['DOMOTICZ']['domoip']
 
