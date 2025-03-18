@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 from pyModbusTCP.client import ModbusClient
+import socket
 from struct import *
 import json
 import re
@@ -8,7 +9,13 @@ import urllib.request
 import urllib
 import configparser
 import argparse
-c = configparser.ConfigParser()
+import logging 
+
+import logging
+import os
+import sys
+
+
 
 
 TIMEOUT = 10
@@ -32,7 +39,7 @@ args = parser.parse_args()
 
 # with open(args.config, 'r') as f:
 #   c = json.load(f)
-
+c = configparser.ConfigParser()
 c.read(args.config)
 
 #####################################################################
@@ -53,6 +60,8 @@ idxTemp  = 1009  # idx value of SolarEdge Temperature, Temperature device
 idxTotPwr = 1010 # idx value of Total LifeTime Production, Custom Sensor
 
 import os
+if 'TARGET' in os.environ:
+    target=os.environ['TARGET']
 
 if 'DOMOTICZIP' in os.environ:
     domoip=os.environ['DOMOTICZIP']
@@ -86,8 +95,20 @@ if 'idxTemp' in c['DOMOTICZ']:
     idxTemp=c['DOMOTICZ']['idxTemp']
 if 'idxTotPwr' in c['DOMOTICZ']:
     idxTotPwr=c['DOMOTICZ']['idxTotPwr']
+###
+##
+##
+# Configure logging to output to stdout
 
+# Check if 'DEBUG' environment variable is set
+debug = os.environ.get('DEBUG', 'false').lower() == 'true'
 
+# Configure logging
+logging.basicConfig(
+    level=logging.DEBUG if debug else logging.INFO,  # Set log level based on DEBUG variable
+    format="%(asctime)s - %(levelname)s - %(message)s",  # Log format
+    stream=sys.stdout  # Output to stdout
+)
 ######################################################################
 # Domoticz extra variables  used                                     #
 ######################################################################
@@ -143,22 +164,25 @@ domoticz = 1
 
 
 def get_inverter_common_block(ctx):
-    adu = c.read_holding_registers(SUNSPEC_I_COMMON_BLOCK_START, 69)
-    data= pack(">"+str(len(adu))+"H" ,*adu)
-    cb={}   
-    cb['C_SunSpec_ID']=str(unpack("4s",data[0:4]))
-    cb['C_SunSpec_DID'] = str(unpack("!H",data[4:6]))
-    cb['C_SunSpec_Length'] = str(unpack("!H",data[6:8]))
-    cb['C_Manufacturer'] = str(unpack("32s",data[8:40]))    
-    cb['C_Manufacturer'] = re.sub( "\\\\x00",'',cb['C_Manufacturer'] )
-    cb['C_Model'] = str(unpack("32s",data[40:72]))
-    cb['C_Model']  = re.sub( "\\\\x00",'',cb['C_Model'])
-    cb['C_Version'] = str(unpack("16s",data[88:104]))
-    cb['C_Version']  = re.sub( "\\\\x00",'',cb['C_Version'])
-    cb['C_SerialNumber'] = str(unpack("32s",data[104:136]))
-    cb['C_SerialNumber']  = re.sub( "\\\\x00",'',cb['C_SerialNumber'])
-    cb['C_DeviceAddress'] = str(unpack("!H",data[136:138]))
-    return cb
+    try:
+        adu = c.read_holding_registers(SUNSPEC_I_COMMON_BLOCK_START, 69)
+        data= pack(">"+str(len(adu))+"H" ,*adu)
+        cb={}   
+        cb['C_SunSpec_ID']=str(unpack("4s",data[0:4]))
+        cb['C_SunSpec_DID'] = str(unpack("!H",data[4:6]))
+        cb['C_SunSpec_Length'] = str(unpack("!H",data[6:8]))
+        cb['C_Manufacturer'] = str(unpack("32s",data[8:40]))    
+        cb['C_Manufacturer'] = re.sub( "\\\\x00",'',cb['C_Manufacturer'] )
+        cb['C_Model'] = str(unpack("32s",data[40:72]))
+        cb['C_Model']  = re.sub( "\\\\x00",'',cb['C_Model'])
+        cb['C_Version'] = str(unpack("16s",data[88:104]))
+        cb['C_Version']  = re.sub( "\\\\x00",'',cb['C_Version'])
+        cb['C_SerialNumber'] = str(unpack("32s",data[104:136]))
+        cb['C_SerialNumber']  = re.sub( "\\\\x00",'',cb['C_SerialNumber'])
+        cb['C_DeviceAddress'] = str(unpack("!H",data[136:138]))
+        return cb
+    except error as e:
+        print(f"read holding registers failed:{e}")
 
 def get_inverter_model_block(ctx):
     adu = c.read_holding_registers(SUNSPEC_I_MODEL_BLOCK_START, 52)
@@ -232,10 +256,38 @@ def senddomo(idx, value,verbose):
 def scale_value(val, sf):
     return val * (10 ** sf)
 
-# TCP auto connect on first modbus request
-c = ModbusClient(host="target.kroone.net", port=PORT, auto_open=True, timeout=TIMEOUT , auto_close=True)
+# Define target and port
+if target:
+    host = target
+else:
+    host = "target.kroone.net"
 
-cb=get_inverter_common_block(c)
+# PORT = 502  # Replace with your actual port
+# TIMEOUT = 5  # Replace with your timeout value
+
+# Resolve FQDN to IP address
+try:
+    resolved_ip = socket.gethostbyname(host)
+    print(f"Resolved IP for {host}: {resolved_ip}")
+except socket.gaierror as e:
+    print(f"Failed to resolve {host}: {e}")
+    exit(1)
+
+# Test IP:Port connectivity
+# sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+# sock.settimeout(TIMEOUT)
+# try:
+#     sock.connect((resolved_ip, PORT))
+#     print(f"Successfully connected to {resolved_ip}:{PORT}")
+# except socket.error as e:
+#     print(f"Failed to connect to {resolved_ip}:{PORT} - {e}")
+#     exit(1)
+# finally:
+#     sock.close()
+
+# Proceed with ModbusClient if IP:Port is valid
+c = ModbusClient(host=resolved_ip, port=PORT, auto_open=True, timeout=TIMEOUT, auto_close=True)
+cb = get_inverter_common_block(c)
 
 
 # if cb:
